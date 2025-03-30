@@ -26,7 +26,10 @@ const processReportData = (apiData) => {
     factVerdict: report.fact_verdict || "Not checked",
     factConfidence: report.fact_confidence,
     by: report.by || "AI System",
-    rawData: report // Keep original data for the popup
+    rawData: report,
+    upvotes: 0,  // Initialize votes to 0
+    downvotes: 0,
+    userVote: null // Keep original data for the popup
   }));
 };
 
@@ -49,6 +52,58 @@ export default function LandingPage() {
 const [loadingReports, setLoadingReports] = useState(false);
 const [errorReports, setErrorReports] = useState(null);
 const [selectedReport, setSelectedReport] = useState(null);
+
+const handleUpvote = (reportId) => {
+  setDisasterReports(prevReports => 
+    prevReports.map(report => {
+      if (report.id !== reportId) return report;
+      
+      // If already upvoted, remove the vote
+      if (report.userVote === 'up') {
+        return {
+          ...report,
+          upvotes: report.upvotes - 1,
+          userVote: null
+        };
+      }
+      
+      // If downvoted, switch to upvote
+      const wasDownvoted = report.userVote === 'down';
+      return {
+        ...report,
+        upvotes: report.upvotes + 1,
+        downvotes: wasDownvoted ? report.downvotes - 1 : report.downvotes,
+        userVote: 'up'
+      };
+    })
+  );
+};
+
+const handleDownvote = (reportId) => {
+  setDisasterReports(prevReports => 
+    prevReports.map(report => {
+      if (report.id !== reportId) return report;
+      
+      // If already downvoted, remove the vote
+      if (report.userVote === 'down') {
+        return {
+          ...report,
+          downvotes: report.downvotes - 1,
+          userVote: null
+        };
+      }
+      
+      // If upvoted, switch to downvote
+      const wasUpvoted = report.userVote === 'up';
+      return {
+        ...report,
+        downvotes: report.downvotes + 1,
+        upvotes: wasUpvoted ? report.upvotes - 1 : report.upvotes,
+        userVote: 'down'
+      };
+    })
+  );
+};
 
 const openArticleForm = (report) => {
   setSelectedReport(report);
@@ -728,7 +783,8 @@ const closeReportForm = () => {
                     </div>
 
                     {/* Active Disaster Reports */}
-                    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    {/* Active Disaster Reports */}
+<div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
   {/* Header - remains fixed */}
   <div className="flex items-center justify-between mb-5">
     <h2 className="text-xl font-semibold text-white">Disaster Reports</h2>
@@ -764,8 +820,8 @@ const closeReportForm = () => {
             key={report.id}
             className={`bg-gray-700/50 p-4 rounded-lg border-l-4 ${
               report.isDisaster === "confirmed" ? "border-red-500" : "border-yellow-500"
-            } hover:bg-gray-700 transition-colors cursor-pointer`}
-            onClick={() => openArticleForm(report.rawData)}
+            } hover:bg-gray-700 transition-colors`}
+            onClick={() => {openArticleForm(report)}}
           >
             <div className="flex justify-between items-start">
               <h3 className="text-sm font-medium text-white">{report.title}</h3>
@@ -795,6 +851,65 @@ const closeReportForm = () => {
             <div className="mt-1 flex justify-between items-center">
               <span className="text-xs text-gray-400">{report.source}</span>
               <span className="text-xs text-gray-400">{report.time}</span>
+            </div>
+
+            {/* Voting buttons row */}
+            <div className="mt-3 flex items-center gap-3">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpvote(report.id);
+                }}
+                className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${
+                  report.userVote === 'up' 
+                    ? 'bg-green-900/50 text-green-300' 
+                    : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-4 w-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5 15l7-7 7 7" 
+                  />
+                </svg>
+                {report.upvotes || 0}
+              </button>
+
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownvote(report.id);
+                }}
+                className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${
+                  report.userVote === 'down' 
+                    ? 'bg-red-900/50 text-red-300' 
+                    : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-4 w-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M19 9l-7 7-7-7" 
+                  />
+                </svg>
+                {report.downvotes || 0}
+              </button>
             </div>
           </div>
         );
