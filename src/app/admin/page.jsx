@@ -4,6 +4,32 @@ import { useState, useEffect } from "react";
 import { FiMenu, FiSearch, FiSettings } from "react-icons/fi";
 import { AiOutlineBell } from "react-icons/ai";
 import { MdDashboard, MdCampaign, MdWidgets, MdSupport } from "react-icons/md";
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Dashboard({ isAdmin }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +40,39 @@ export default function Dashboard({ isAdmin }) {
   const [sosRequests, setSosRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAnalysisPopup, setShowAnalysisPopup] = useState(false);
+  const generateRandomChart = () => {
+    const chartTypes = ['bar', 'line', 'pie'];
+    const randomType = chartTypes[Math.floor(Math.random() * chartTypes.length)];
+    
+    const labels = ['Earthquake', 'Wildfire', 'Floods', 'Tsunami', 'Hurricane', 'Drought'];
+    const data = labels.map(() => Math.floor(Math.random() * 100) + 1);
+    
+    const backgroundColors = [
+      'rgba(255, 99, 132, 0.6)',
+      'rgba(54, 162, 235, 0.6)',
+      'rgba(255, 206, 86, 0.6)',
+      'rgba(75, 192, 192, 0.6)',
+      'rgba(153, 102, 255, 0.6)',
+      'rgba(255, 159, 64, 0.6)'
+    ];
+  
+    const chartData = {
+      labels,
+      datasets: [{
+        label: 'Report Analysis',
+        data,
+        backgroundColor: backgroundColors,
+        borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+        borderWidth: 1
+      }]
+    };
+  
+    return {
+      type: randomType,
+      data: chartData
+    };
+  };
 
   useEffect(() => {
     const fetchEmergencyData = async () => {
@@ -182,10 +241,13 @@ export default function Dashboard({ isAdmin }) {
                 <MdDashboard className="mr-3 text-indigo-400" />
                 {sidebarOpen && <span>Dashboard</span>}
               </li>
-              <li className="flex items-center p-3 rounded-lg hover:bg-gray-700/50 border border-transparent hover:border-gray-600 transition-colors">
-                <MdCampaign className="mr-3 text-indigo-400" />
-                {sidebarOpen && <span>Emergency Reports</span>}
-              </li>
+              <li 
+  className="flex items-center p-3 rounded-lg hover:bg-gray-700/50 border border-transparent hover:border-gray-600 transition-colors cursor-pointer"
+  onClick={() => setShowAnalysisPopup(true)}
+>
+  <MdCampaign className="mr-3 text-indigo-400" />
+  {sidebarOpen && <span>Report analysis</span>}
+</li>
               <li className="flex items-center p-3 rounded-lg hover:bg-gray-700/50 border border-transparent hover:border-gray-600 transition-colors">
                 <MdWidgets className="mr-3 text-indigo-400" />
                 {sidebarOpen && <span>Resources</span>}
@@ -428,6 +490,42 @@ export default function Dashboard({ isAdmin }) {
           </div>
         </div>
       </div>
+      {showAnalysisPopup && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div className="bg-gray-800 rounded-xl p-6 max-w-2xl w-full border border-gray-700">
+      <div className="flex justify-between items-center mb-4">
+        <button 
+          onClick={() => setShowAnalysisPopup(false)}
+          className="text-gray-400 hover:text-white"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div className="h-80">
+        {(() => {
+          const randomChart = generateRandomChart();
+          switch (randomChart.type) {
+            case 'bar':
+              return <Bar data={randomChart.data} options={{ maintainAspectRatio: false }} />;
+            case 'line':
+              return <Line data={randomChart.data} options={{ maintainAspectRatio: false }} />;
+            case 'pie':
+              return <Pie data={randomChart.data} options={{ maintainAspectRatio: false }} />;
+            default:
+              return <Bar data={randomChart.data} options={{ maintainAspectRatio: false }} />;
+          }
+        })()}
+      </div>
+      
+      <div className="mt-4 text-sm text-gray-400">
+        <p className="mt-2">Click outside or the X button to close.</p>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
