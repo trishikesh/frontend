@@ -32,7 +32,7 @@ export default function ArticleForm({ articleData, onClose }) {
               </p>
               {articleData.fact_confidence && (
                 <p className="text-sm text-gray-600">
-                  Confidence: {Math.round(articleData.fact_confidence)}%
+                  Confidence: {Math.round(articleData.fact_confidence * 100)}%
                 </p>
               )}
             </div>
