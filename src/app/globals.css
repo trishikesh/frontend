@@ -24,3 +24,49 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Minimalist card styles */
+.safety-card {
+  @apply bg-gray-800/50 hover:bg-gray-700/30 transition-all duration-200;
+  backdrop-filter: blur(4px);
+}
+
+/* Center popup animation */
+@keyframes fadeInScale {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.resource-modal {
+  animation: fadeInScale 0.2s ease-out forwards;
+}
+/* Add this to your global CSS */
+@layer utilities {
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #374151; /* gray-700 */
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4B5563; /* gray-600 */
+    border-radius: 2px;
+  }
+}
